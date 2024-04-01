@@ -66,9 +66,10 @@ int circbuf8_writeString(struct circbuf8 *hBuf, const char *str)
 	int status = CIRCBUF_STATUS_OK;
 	const char *c = str;
 	int count = 0;
+	int overrun = 0;
 	while (*c != '\0')
 	{
-		circbuf8_writeByte(hBuf, *c);
+		status = circbuf8_writeByte(hBuf, *c);
 		++c;
 		++count;
 		if (count == hBuf->size)
@@ -76,8 +77,13 @@ int circbuf8_writeString(struct circbuf8 *hBuf, const char *str)
 			status = CIRCBUF_STATUS_ERR;
 			break; //breaks out of the while loop
 		}
+		if (status == CIRCBUF_STATUS_OVERRUN)
+			overrun = 1;
 	}
-	return status;
+	if (overrun == 0)
+		return status;
+	else
+		return CIRCBUF_STATUS_OVERRUN;
 }
 
 /*
